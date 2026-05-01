@@ -6,18 +6,13 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 app.use(function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
   next();
 });
 
-app.post("/chat", async function(req, res) {
-  const message = req.body.message;
-  const systemPrompt = req.body.systemPrompt;
-  const fullPrompt = systemPrompt + "\n\nUser says: " + message;
+// Changed to GET so code.org can call it using getJSON
+app.get("/chat", async function(req, res) {
+  const team = req.query.team;
+  const systemPrompt = "You are a FIFA World Cup 2022 expert. Give 5 interesting facts about " + team + ". Format them as a numbered list.";
 
   try {
     const response = await fetch(
@@ -29,17 +24,14 @@ app.post("/chat", async function(req, res) {
           "x-goog-api-key": GEMINI_API_KEY
         },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: fullPrompt }] }]
+          contents: [{ role: "user", parts: [{ text: systemPrompt }] }]
         })
       }
     );
-
     const data = await response.json();
     const reply = data.candidates[0].content.parts[0].text;
     res.json({ reply: reply });
-
   } catch (error) {
-    console.error("Gemini API error:", error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
