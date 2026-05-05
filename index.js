@@ -9,14 +9,16 @@ app.use(function(req, res, next) {
   next();
 });
 
-// Changed to GET so code.org can call it using getJSON
 app.get("/chat", async function(req, res) {
   const team = req.query.team;
+  console.log("Request for team:", team);
+  console.log("API key present:", !!GEMINI_API_KEY);
+
   const systemPrompt = "You are a FIFA World Cup 2022 expert. Give 5 interesting facts about " + team + ". Format them as a numbered list.";
 
   try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+    const geminiRes = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
         method: "POST",
         headers: {
@@ -28,11 +30,21 @@ app.get("/chat", async function(req, res) {
         })
       }
     );
-    const data = await response.json();
+
+    const data = await geminiRes.json();
+    console.log("Gemini status:", geminiRes.status);
+    console.log("Gemini response:", JSON.stringify(data).slice(0, 200));
+
+    if (!data.candidates) {
+      return res.status(500).json({ error: "No candidates", details: data });
+    }
+
     const reply = data.candidates[0].content.parts[0].text;
     res.json({ reply: reply });
+
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("Error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
