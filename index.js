@@ -14,8 +14,7 @@ app.get("/chat", async function(req, res) {
   console.log("Request for team:", team);
   console.log("API key present:", !!GEMINI_API_KEY);
 
-  const systemPrompt = "You are a FIFA World Cup 2022 expert. Give 5 interesting facts about " + team + ". Format them as a numbered list.";
-
+  const systemPrompt = "You are a FIFA World Cup 2022 expert. Give 3 short facts about " + team + " at the 2022 World Cup. Each fact must be one sentence maximum. Format as a numbered list. No bold or other formatting, just plain text";
   try {
     const geminiRes = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
